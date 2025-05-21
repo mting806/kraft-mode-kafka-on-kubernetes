@@ -31,8 +31,27 @@ sed -e "s|^node.id=.*|node.id=$NODE_ID|" \
     -e "s|^listeners=.*|listeners=$LISTENERS|" \
     -e "s|^advertised.listeners=.*|advertised.listeners=$ADVERTISED_LISTENERS|" \
     -e "s|^log.dirs=.*|log.dirs=$SHARE_DIR/$NODE_ID|" \
-    "$CONFIG_FILE" > "$CONFIG_FILE.tmp" \
-    && mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+    "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
+
+# Add/Update message.max.bytes if KAFKA_MESSAGE_MAX_BYTES is set
+if [ -n "$KAFKA_MESSAGE_MAX_BYTES" ]; then
+  if grep -q "^message.max.bytes=" "$CONFIG_FILE.tmp"; then
+    sed -i "s|^message.max.bytes=.*|message.max.bytes=$KAFKA_MESSAGE_MAX_BYTES|" "$CONFIG_FILE.tmp"
+  else
+    echo "message.max.bytes=$KAFKA_MESSAGE_MAX_BYTES" >> "$CONFIG_FILE.tmp"
+  fi
+fi
+
+# Add/Update replica.fetch.max.bytes if KAFKA_REPLICA_FETCH_MAX_BYTES is set
+if [ -n "$KAFKA_REPLICA_FETCH_MAX_BYTES" ]; then
+  if grep -q "^replica.fetch.max.bytes=" "$CONFIG_FILE.tmp"; then
+    sed -i "s|^replica.fetch.max.bytes=.*|replica.fetch.max.bytes=$KAFKA_REPLICA_FETCH_MAX_BYTES|" "$CONFIG_FILE.tmp"
+  else
+    echo "replica.fetch.max.bytes=$KAFKA_REPLICA_FETCH_MAX_BYTES" >> "$CONFIG_FILE.tmp"
+  fi
+fi
+
+mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
 
 LOG_DIR="$SHARE_DIR/$NODE_ID"
 if [[ ! -f "$LOG_DIR/meta.properties" ]]; then

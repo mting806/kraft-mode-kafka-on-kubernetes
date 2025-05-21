@@ -41,6 +41,10 @@ spec:
               value: '{{ .Values.kafka.replicas }}'
             - name: DEFAULT_MIN_INSYNC_REPLICAS
               value: '1'
+            - name: KAFKA_MESSAGE_MAX_BYTES
+              value: "{{ .Values.kafka.messageMaxBytes | default \"1048576\" }}"
+            - name: KAFKA_REPLICA_FETCH_MAX_BYTES
+              value: "{{ .Values.kafka.replicaFetchMaxBytes | default \"1048576\" }}"
           volumeMounts:
             - name: data
               mountPath: /mnt/kafka
